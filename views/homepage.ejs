@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+                Node JS example exercise
+        </title>
+    </head>
+
+    <body>
+        <h1>A node JS Example Exercise</h1>
+
+        <button id="getBtn">Get Products</button>
+        <form id="createForm">
+            ID: <input type="text" id="idIp"></input>
+            Name:<input type="text" id="nameId" ></input>
+            Price:<input type="text" id="priceId" ></input>
+           <button>Create Products</button>
+        </form>
+
+        <table>
+            <thread>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+              </tr>
+            </thread>
+            <tbody> </tbody>
+        </table>
+
+          <div id="createTable">
+        
+          </div>
+
+          <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"> </script>
+        
+        <script>
+
+            //Function that holds all the crud operations
+            $(function(){
+
+                //GET method to fetch products from the database
+                $('#getBtn').on('click',function(){
+                    $.ajax({
+                        url:'/products',
+                        contentType:'appliication/json',
+                        success:function(response){
+                           
+                            console.log(response.data.length);
+
+
+                            var mainContainer = document.getElementById('createTable');
+                                mainContainer.innerHTML="";
+                                for (var i = 0; i < response.data.length; i++) {
+                                    // if(response.data[i].Id=== undefined){
+                                    //     break;
+                                    // }
+                                    let div = document.createElement("tr");
+                                    div.innerHTML = '<td class="id">'+response.data[i].id +' </td> <td><input type="text" class="name" value=" '+response.data[i].name+' "></td>\
+                                    <td><input type="text" class="price" value="'+response.data[i].price +'"></td>\
+                                        <td> <button class="updateBtn">UPDATE</button></td><td><button class="deleteBtn">DELETE</button> </td>';
+                                    //div.innerHTML = 'id:'+result[i].id +' name:'+result[i].name+' price'+result[i].price;
+                                    //console.log(i);
+                                    mainContainer.appendChild(div);
+                                }
+                            }
+                    });
+                });
+
+                
+                //POST method to create new products
+                $('#createForm').on('submit',function(event){
+                    event.preventDefault();
+                    var idIpt = $('#idIp');
+                    var nameIpt = $('#nameId');
+                    var priceIpt = $('#priceId');
+
+                    $.ajax({
+                        url:'/products',
+                        method:'POST',
+                        contentType:'application/json',
+                        data : JSON.stringify({id: idIpt.val(),name: nameIpt.val(),price: priceIpt.val()}),
+                        success: function(response){
+                            console.log(response);
+                            idIpt.val('');
+                            nameIpt.val('');
+                            priceIpt.val('');
+                            $('#getBtn').click();
+                        }
+                    });
+                });
+
+                //PUT method to update values of products
+                $(document).on('click','#createTable tr td button.updateBtn',function(){
+                    var rowEl = $(this).closest('tr');
+                    var id = rowEl.find('.id').text();
+                    var newName =rowEl.find('.name').val();
+                    var newPrice = rowEl.find('.price').val();
+                   
+                    $.ajax({
+                        url:'/products/'+id,
+                        method:'PUT',
+                        contentType:'application/json',
+                        data : JSON.stringify({name : newName,price : newPrice}),
+                        success : function(response){
+                            console.log(response);
+                            //namePut.val('');
+                            //pricePut.val('');
+                            $('#getBtn').click();
+                        }
+                    });
+
+                });
+
+                //DELETE method to delete products
+                $(document).on('click','#createTable tr td button.deleteBtn',function(){
+                    var rowEl = $(this).closest('tr');
+                    var id = rowEl.find('.id').text();
+
+                    $.ajax({
+                    url:'/products/'+id,
+                    method:'DELETE',
+                    contentType:'application/json',
+                    success : function(response){
+                        console.log(response);
+                        //idDel.val('');
+                        $('#getBtn').click();
+                    }
+                    });
+                    
+                });
+
+
+            });
+        </script>
+    </body>
+</html>
